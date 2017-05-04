@@ -408,6 +408,28 @@ open class DataRequest: Request {
         dataDelegate.progressHandler = (closure, queue)
         return self
     }
+    
+    /// Adds a handler to be called once the request has finished.
+    ///
+    /// - parameter queue:             The queue on which the completion handler is dispatched.
+    /// - parameter completionHandler: The code to be executed once the request has finished.
+    ///
+    /// - returns: The request.
+    @discardableResult
+    open func syncResponse(completionHandler: @escaping (DefaultDataResponse) -> Void) -> Self {
+        delegate.queue.addOperation {
+            var dataResponse = DefaultDataResponse(
+                request: self.request,
+                response: self.response,
+                data: self.delegate.data,
+                error: self.delegate.error
+            )
+            
+            dataResponse.add(self.delegate.metrics)
+            completionHandler(dataResponse)
+        }
+        return self
+    }
 }
 
 // MARK: -
